@@ -51,18 +51,18 @@ function drawThing(cx, V) {
     log('b:', v.elements[0], v.elements[1], v.elements[2], v.elements[3]);
     v = v.multiply(1/v.elements[3]);
     log('B:', v.elements[0], v.elements[1], v.elements[2], v.elements[3]);
-    v.elements[0] *= canvas.width;
-    v.elements[1] *= canvas.height;
-    v.elements[0] += canvas.width/2;
-    v.elements[1] += canvas.height/2;
+    v.elements[0] += 0.5;
+    v.elements[1] += 0.5;
+    v.elements[0] *= canvas.height;
+    v.elements[1] *= canvas.width;
     log('C:', v.elements[0], v.elements[1], v.elements[2], v.elements[3]);
-    cx.canvascx[op](v.elements[0], v.elements[1]);
+    cx.canvascx[op](v.elements[1], v.elements[0]);
     if (op == 'moveTo') {
       op = 'lineTo';
       V0 = v;
     }
   });
-  cx.canvascx.lineTo(V0.elements[0], V0.elements[1]);
+  cx.canvascx.lineTo(V0.elements[1], V0.elements[0]);
   cx.canvascx.strokeStyle = '#00ff00';
   cx.canvascx.lineWidth = 1;
   cx.canvascx.stroke();
