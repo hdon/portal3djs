@@ -40,8 +40,8 @@ function drawThing(cx, V) {
   /* NOTE THE ORDER USED HERE */
   xm = Matrix.I(4);
   xm = xm.multiply(cx.pmatrix);
-  xm = xm.multiply(Matrix.Translation($V([0, 0, 4000])));
-  xm = xm.multiply(Matrix.MakeRotation(angle, $V([1, 1, 0])));
+  xm = xm.multiply(Matrix.Translation($V([0, 0, 6000])));
+  xm = xm.multiply(Matrix.MakeRotation(angle, $V([0, 1, 0])));
   xm = xm.multiply(Matrix.Translation($V([0, 0, -4000])));
   var op = 'moveTo';
   cx.canvascx.beginPath();
@@ -53,16 +53,16 @@ function drawThing(cx, V) {
     log('B:', v.elements[0], v.elements[1], v.elements[2], v.elements[3]);
     v.elements[0] += 0.5;
     v.elements[1] += 0.5;
-    v.elements[0] *= canvas.height;
-    v.elements[1] *= canvas.width;
+    v.elements[0] *= canvas.width;
+    v.elements[1] *= canvas.height;
     log('C:', v.elements[0], v.elements[1], v.elements[2], v.elements[3]);
-    cx.canvascx[op](v.elements[1], v.elements[0]);
+    cx.canvascx[op](v.elements[0], v.elements[1]);
     if (op == 'moveTo') {
       op = 'lineTo';
       V0 = v;
     }
   });
-  cx.canvascx.lineTo(V0.elements[1], V0.elements[0]);
+  cx.canvascx.lineTo(V0.elements[0], V0.elements[1]);
   cx.canvascx.strokeStyle = '#00ff00';
   cx.canvascx.lineWidth = 1;
   cx.canvascx.stroke();
@@ -122,7 +122,7 @@ var shape = [
     shapeb,   shapeb,  void 0,
     shapeb,   shapea,  void 0
 ];
-var angle = Math.PI/24;
+var angle = 0; //Math.PI/24;
 var translate = 0;
 document.addEventListener('DOMContentLoaded', function() {
   fpsEl = document.getElementById('fps');
@@ -131,13 +131,13 @@ document.addEventListener('DOMContentLoaded', function() {
   canvas = document.getElementById('gena');
   cx.canvas = canvas;
   cx.canvascx = canvas.getContext('2d');
-  cx.pmatrix = Matrix.makePerspective(0.25, canvas.height/canvas.width, znear, zfar);
+  cx.pmatrix = Matrix.makePerspective(0.25, canvas.width/canvas.height, znear, zfar);
   //cx.pmatrix = Matrix.I(4);
   console.log('Projection Matrix:\n'+cx.pmatrix);
 
   drawScene = function() {
     //cx.mvmatrix.translateSelf($V([5, 5, -5]));
-    var rotation = Matrix.MakeRotation(angle, $V([1, 1, 0]));
+    var rotation = Matrix.MakeRotation(angle, $V([0, 1, 0]));
     //console.log('rotation matrix:\n'+rotation);
     cx.mvmatrix = Matrix.I(4);
     cx.mvmatrix.multiply(Matrix.Translation($V([0, 0, -2000])));
