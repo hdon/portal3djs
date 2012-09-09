@@ -38,6 +38,9 @@ function drawThing(cx, V) {
   //xm = xm.multiply(cx.pmatrix);
 
   xm = Matrix.I(4);
+  xm = xm.multiply(cx.pmatrix);
+  xm = xm.multiply(Matrix.Translation($V([0, 0, 4000])));
+  xm = xm.multiply(Matrix.MakeRotation(angle, $V([1, 1, 0])));
   xm = xm.multiply(Matrix.Translation($V([0, 0, -4000])));
   var op = 'moveTo';
   cx.canvascx.beginPath();
@@ -46,10 +49,10 @@ function drawThing(cx, V) {
     //v = xm.multiply(v);
     //v = cx.mvmatrix.multiply(v);
     //v = Matrix.Translation($V([0, 0, -4000])).multiply(v);
+    //v = Matrix.MakeRotation(angle, $V([1, 1, 0])).multiply(v);
+    //v = Matrix.Translation($V([0, 0, 4000])).multiply(v);
     v = xm.multiply(v);
-    v = Matrix.MakeRotation(angle, $V([1, 1, 0])).multiply(v);
-    v = Matrix.Translation($V([0, 0, 4000])).multiply(v);
-    v = cx.pmatrix.multiply(v);
+    //v = cx.pmatrix.multiply(v);
     v = v.multiply(1/v.elements[3]);
     log('B:', v.elements[0], v.elements[1], v.elements[2], v.elements[3]);
     v.elements[0] += 200;
@@ -67,6 +70,61 @@ function drawThing(cx, V) {
   cx.canvascx.strokeStyle = '#00ff00';
   cx.canvascx.lineWidth = 1;
   cx.canvascx.stroke();
+}
+
+var T = Matrix.Translation;
+var R = Matrix.MakeRotation;
+function debugXform(v) {
+  var M0 = Array.prototype.slice.call(arguments, 1);
+  var M1 = [];
+  console.log('Transforming '+v+' using '+M0.length+' matrices');
+  do {
+    M1.push(M0.shift());
+    console.log('  Incorporating matrix:\n'+M1[M1.length-1]);
+
+    var v0 = v.dup();
+    var v1 = v.dup();
+
+    var m = Matrix.I(4);
+    for (var i=0; i<M1.length; i++) {
+      m = m.x(M1[M1.length-1-i]);
+      v1 = M1[i].x(v1);
+    }
+    v0 = m.x(v0);
+
+    if (!v1.eql(v0))
+      return console.log('  FAILURE:\n'+v0+'\ndoes not equal\n'+v1+'\nConcatenated transformation matrix:\n'+m);
+    console.log('  Resulting vector:\n'+v0+'\n=\n'+v1);
+
+  } while (M0.length);
+
+  console.log('SUCCESS\n'+v0);
+  return void 0;
+}
+
+function transformVert(cx, x, y, z) {
+  xm = Matrix.I(4);
+  xm = xm.multiply(Matrix.Translation($V([0, 0, -4000])));
+  xm = xm.multiply(Matrix.MakeRotation(angle, $V([1, 1, 0])));
+  xm = xm.multiply(Matrix.Translation($V([0, 0, 4000])));
+  var V = [$V([x, y, z, 1])];
+  V.forEach(function(v) {
+    log('A:', v.elements[0], v.elements[1], v.elements[2], v.elements[3]);
+    //v = xm.multiply(v);
+    //v = cx.mvmatrix.multiply(v);
+    //v = Matrix.Translation($V([0, 0, -4000])).multiply(v);
+    //v = Matrix.MakeRotation(angle, $V([1, 1, 0])).multiply(v);
+    //v = Matrix.Translation($V([0, 0, 4000])).multiply(v);
+    v = xm.multiply(v);
+    v = cx.pmatrix.multiply(v);
+    v = v.multiply(1/v.elements[3]);
+    log('B:', v.elements[0], v.elements[1], v.elements[2], v.elements[3]);
+    v.elements[0] += 200;
+    v.elements[1] +=  80;
+    /*v.elements[0] *= canvas.width;
+    v.elements[1] *= canvas.height;*/
+    log('C:', v.elements[0], v.elements[1], v.elements[2], v.elements[3]);
+  });
 }
 
 function canvasClear(cx) {
