@@ -35,23 +35,23 @@ Matrix.makeFrustum = function Matrix_makeFrustum(left, right, bottom, top, znear
     var D = -2*zfar*znear/(zfar-znear);
 
     m[0][0] = 2*znear/(right-left);
-    m[0][1] = 0;
-    m[0][2] = (right+left)/(right-left);
-    m[0][3] = 0;
-           
     m[1][0] = 0;
-    m[1][1] = 2*znear/(top-bottom);
-    m[1][2] = (top+bottom)/(top-bottom);
-    m[1][3] = 0;
-           
-    m[2][0] = 0;
-    m[2][1] = 0;
-    m[2][2] = -(zfar+znear)/(zfar-znear);
-    m[2][3] = -2*zfar*znear/(zfar-znear);
-           
+    m[2][0] = (right+left)/(right-left);
     m[3][0] = 0;
+           
+    m[0][1] = 0;
+    m[1][1] = 2*znear/(top-bottom);
+    m[2][1] = (top+bottom)/(top-bottom);
     m[3][1] = 0;
-    m[3][2] = -1;
+           
+    m[0][2] = 0;
+    m[1][2] = 0;
+    m[2][2] = -(zfar+znear)/(zfar-znear);
+    m[3][2] = -2*zfar*znear/(zfar-znear);
+           
+    m[0][3] = 0;
+    m[1][3] = 0;
+    m[2][3] = -1;
     m[3][3] = 0;
 
     return r;

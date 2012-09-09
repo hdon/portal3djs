@@ -37,6 +37,7 @@ function drawThing(cx, V) {
   //xm = xm.multiply(cx.mvmatrix);
   //xm = xm.multiply(cx.pmatrix);
 
+  /* NOTE THE ORDER USED HERE */
   xm = Matrix.I(4);
   xm = xm.multiply(cx.pmatrix);
   xm = xm.multiply(Matrix.Translation($V([0, 0, 4000])));
@@ -46,19 +47,14 @@ function drawThing(cx, V) {
   cx.canvascx.beginPath();
   V.forEach(function(v) {
     log('A:', v.elements[0], v.elements[1], v.elements[2], v.elements[3]);
-    //v = xm.multiply(v);
-    //v = cx.mvmatrix.multiply(v);
-    //v = Matrix.Translation($V([0, 0, -4000])).multiply(v);
-    //v = Matrix.MakeRotation(angle, $V([1, 1, 0])).multiply(v);
-    //v = Matrix.Translation($V([0, 0, 4000])).multiply(v);
     v = xm.multiply(v);
-    //v = cx.pmatrix.multiply(v);
+    log('b:', v.elements[0], v.elements[1], v.elements[2], v.elements[3]);
     v = v.multiply(1/v.elements[3]);
     log('B:', v.elements[0], v.elements[1], v.elements[2], v.elements[3]);
-    v.elements[0] += 200;
-    v.elements[1] +=  80;
-    /*v.elements[0] *= canvas.width;
-    v.elements[1] *= canvas.height;*/
+    v.elements[0] *= canvas.width;
+    v.elements[1] *= canvas.height;
+    v.elements[0] += canvas.width/2;
+    v.elements[1] += canvas.height/2;
     log('C:', v.elements[0], v.elements[1], v.elements[2], v.elements[3]);
     cx.canvascx[op](v.elements[0], v.elements[1]);
     if (op == 'moveTo') {
@@ -102,31 +98,6 @@ function debugXform(v) {
   return void 0;
 }
 
-function transformVert(cx, x, y, z) {
-  xm = Matrix.I(4);
-  xm = xm.multiply(Matrix.Translation($V([0, 0, -4000])));
-  xm = xm.multiply(Matrix.MakeRotation(angle, $V([1, 1, 0])));
-  xm = xm.multiply(Matrix.Translation($V([0, 0, 4000])));
-  var V = [$V([x, y, z, 1])];
-  V.forEach(function(v) {
-    log('A:', v.elements[0], v.elements[1], v.elements[2], v.elements[3]);
-    //v = xm.multiply(v);
-    //v = cx.mvmatrix.multiply(v);
-    //v = Matrix.Translation($V([0, 0, -4000])).multiply(v);
-    //v = Matrix.MakeRotation(angle, $V([1, 1, 0])).multiply(v);
-    //v = Matrix.Translation($V([0, 0, 4000])).multiply(v);
-    v = xm.multiply(v);
-    v = cx.pmatrix.multiply(v);
-    v = v.multiply(1/v.elements[3]);
-    log('B:', v.elements[0], v.elements[1], v.elements[2], v.elements[3]);
-    v.elements[0] += 200;
-    v.elements[1] +=  80;
-    /*v.elements[0] *= canvas.width;
-    v.elements[1] *= canvas.height;*/
-    log('C:', v.elements[0], v.elements[1], v.elements[2], v.elements[3]);
-  });
-}
-
 function canvasClear(cx) {
   cx.canvascx.fillStyle = '#000000';
   cx.canvascx.fillRect(0, 0, cx.canvas.width, cx.canvas.height);
@@ -160,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
   canvas = document.getElementById('gena');
   cx.canvas = canvas;
   cx.canvascx = canvas.getContext('2d');
-  cx.pmatrix = Matrix.makePerspective(0.25, canvas.width/canvas.height, znear, zfar);
+  cx.pmatrix = Matrix.makePerspective(0.25, canvas.height/canvas.width, znear, zfar);
   //cx.pmatrix = Matrix.I(4);
   console.log('Projection Matrix:\n'+cx.pmatrix);
 
