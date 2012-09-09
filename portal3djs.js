@@ -64,8 +64,9 @@ function drawThing(cx, V) {
   });
   cx.canvascx.lineTo(V0.elements[0], V0.elements[1]);
   cx.canvascx.strokeStyle = '#00ff00';
+  cx.canvascx.fillStyle = '#00ff00';
   cx.canvascx.lineWidth = 1;
-  cx.canvascx.stroke();
+  cx.canvascx.fill();
 }
 
 var T = Matrix.Translation;
