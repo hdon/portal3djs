@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function() {
   cx.canvas = canvas;
   cx.canvascx = canvas.getContext('2d');
 
-  cx.pmatrix = M4x4.makePerspective(0.25, canvas.width/canvas.height, znear, zfar);
+  cx.pmatrix = M4x4.makePerspective(45, canvas.width/canvas.height, znear, zfar);
   cx.mvmatrix = null; // @todo TODO
 
   console.log('Projection Matrix:\n'+M$(cx.pmatrix));
