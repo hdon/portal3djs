@@ -10,6 +10,17 @@ var fpsEl;
 var znear = 100;
 var zfar = 10000;
 
+function M$(x) {
+  if (x.length == 16) {
+    return '['+x[0]+' '+x[4]+' '+x[8]+' '+x[12]+'\n'+
+               x[1]+' '+x[5]+' '+x[9]+' '+x[13]+'\n'+
+               x[2]+' '+x[6]+' '+x[10]+' '+x[14]+'\n'+
+               x[3]+' '+x[7]+' '+x[11]+' '+x[15]+']';
+  } else {
+    return '['+Array.prototype.join.call(x, ' ')+']';
+  }
+}
+
 var sectorsByName = {};
 function Sector(name, vertices, faces) {
   sectorsByName[name] = this;
@@ -33,58 +44,56 @@ function log() {
 function drawThing(cx, V) {
   var v0;
   var xm;
-  //xm = Matrix.I(4);
-  //xm = xm.multiply(cx.mvmatrix);
-  //xm = xm.multiply(cx.pmatrix);
 
   /* NOTE THE ORDER USED HERE */
-  xm = Matrix.I(4);
-  xm = xm.multiply(cx.pmatrix);
-  xm = xm.multiply(Matrix.Translation($V([0, 0, 6000])));
-  xm = xm.multiply(Matrix.MakeRotation(angle, $V([0, 1, 0])));
-  xm = xm.multiply(Matrix.Translation($V([0, 0, -4000])));
+  xm = M4x4.clone(M4x4.I);
+  M4x4.mul(xm, cx.pmatrix, xm);
+  M4x4.mul(xm, M4x4.makeTranslate3(0, 0, 6000), xm);
+  M4x4.mul(xm, M4x4.makeRotate(angle, [1, 1, 0]), xm);
+  M4x4.mul(xm, M4x4.makeTranslate3(0, 0, -4000), xm);
+  lolxm = xm;
+
   var op = 'moveTo';
   cx.canvascx.beginPath();
   V.forEach(function(v) {
-    log('A:', v.elements[0], v.elements[1], v.elements[2], v.elements[3]);
-    v = xm.multiply(v);
-    log('b:', v.elements[0], v.elements[1], v.elements[2], v.elements[3]);
-    v = v.multiply(1/v.elements[3]);
-    log('B:', v.elements[0], v.elements[1], v.elements[2], v.elements[3]);
-    v.elements[0] += 0.5;
-    v.elements[1] += 0.5;
-    v.elements[0] *= canvas.width;
-    v.elements[1] *= canvas.height;
-    log('C:', v.elements[0], v.elements[1], v.elements[2], v.elements[3]);
-    cx.canvascx[op](v.elements[0], v.elements[1]);
+    log('A:', M$(v));
+    M4x4.transformPoint(xm, v, v);
+    log('B:', M$(v));
+    v[0] += 0.5;
+    v[1] += 0.5;
+    v[0] *= canvas.width;
+    v[1] *= canvas.height;
+    log('C:', M$(v));
+    cx.canvascx[op](v[0], v[1]);
     if (op == 'moveTo') {
       op = 'lineTo';
       V0 = v;
     }
   });
-  cx.canvascx.lineTo(V0.elements[0], V0.elements[1]);
+  cx.canvascx.lineTo(V0[0], V0[1]);
   cx.canvascx.strokeStyle = '#00ff00';
   cx.canvascx.fillStyle = '#00ff00';
   cx.canvascx.lineWidth = 1;
   cx.canvascx.fill();
 }
 
-var T = Matrix.Translation;
-var R = Matrix.MakeRotation;
 function debugXform(v) {
   var M0 = Array.prototype.slice.call(arguments, 1);
   var M1 = [];
-  console.log('Transforming '+v+' using '+M0.length+' matrices');
+  console.log('Transforming '+M$(v)+' using '+M0.length+' matrices');
   do {
     M1.push(M0.shift());
     console.log('  Incorporating matrix:\n'+M1[M1.length-1]);
 
-    var v0 = v.dup();
-    var v1 = v.dup();
+    var v0 = V3.clone(v);
+    var v1 = V3.clone(v);
 
-    var m = Matrix.I(4);
+    var m = M4x4.clone(M4x4.I);
     for (var i=0; i<M1.length; i++) {
-      m = m.x(M1[M1.length-1-i]);
+      /* Matrix concatenation */
+      M4x4.mul(m, M1[i], m);
+      /* Vector multiplication */
+      V3.mul4x4(M[i], v, v);
       v1 = M1[i].x(v1);
     }
     v0 = m.x(v0);
@@ -132,35 +141,31 @@ document.addEventListener('DOMContentLoaded', function() {
   canvas = document.getElementById('gena');
   cx.canvas = canvas;
   cx.canvascx = canvas.getContext('2d');
-  cx.pmatrix = Matrix.makePerspective(0.25, canvas.width/canvas.height, znear, zfar);
-  //cx.pmatrix = Matrix.I(4);
-  console.log('Projection Matrix:\n'+cx.pmatrix);
+
+  cx.pmatrix = M4x4.makePerspective(0.25, canvas.width/canvas.height, znear, zfar);
+  cx.mvmatrix = null; // @todo TODO
+
+  console.log('Projection Matrix:\n'+M$(cx.pmatrix));
 
   drawScene = function() {
-    //cx.mvmatrix.translateSelf($V([5, 5, -5]));
-    var rotation = Matrix.MakeRotation(angle, $V([0, 1, 0]));
-    //console.log('rotation matrix:\n'+rotation);
-    cx.mvmatrix = Matrix.I(4);
-    cx.mvmatrix.multiply(Matrix.Translation($V([0, 0, -2000])));
-    cx.mvmatrix = cx.mvmatrix.multiply(rotation);
-    cx.mvmatrix.multiply(Matrix.Translation($V([0, 0,  2000])));
+    // TODO construct mvmatrix
     //cx.mvmatrix.translateSelf($V([translate, translate, 0]));
     translate += 0.01;
     //console.log(cx.mvmatrix.toString());
     canvasClear(cx);
 
     drawThing(cx, [
-      $V([-100, -100, 3000, 1]),
-      $V([ 100, -100, 3000, 1]),
-      $V([ 100,  100, 3000, 1]),
-      $V([-100,  100, 3000, 1]),
+      [-100, -100, 3000],
+      [ 100, -100, 3000],
+      [ 100,  100, 3000],
+      [-100,  100, 3000],
     ]);
 
     drawThing(cx, [
-      $V([-100, -100, 5000, 1]),
-      $V([ 100, -100, 5000, 1]),
-      $V([ 100,  100, 5000, 1]),
-      $V([-100,  100, 5000, 1]),
+      [-100, -100, 5000],
+      [ 100, -100, 5000],
+      [ 100,  100, 5000],
+      [-100,  100, 5000],
     ]);
 
     if (0)
